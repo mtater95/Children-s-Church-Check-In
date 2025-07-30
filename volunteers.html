@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Volunteer Login</title>
+  <style>
+    body { font-family: Arial; margin: 40px; }
+    #main-content { display: none; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <h1>Volunteer Access</h1>
+  <div id="pin-section">
+    <label for="pin-input">Enter 4-digit PIN:</label>
+    <input type="password" id="pin-input" maxlength="4" pattern="\d{4}" autofocus />
+    <button onclick="checkPin()">Login</button>
+    <div id="pin-error" class="hidden" style="color: red;">Invalid PIN. Please try again.</div>
+  </div>
+
+  <div id="main-content">
+    <h2>Checked-in Kids</h2>
+    <button onclick="downloadKids()">Download Kids List (CSV)</button>
+    <ul id="kids-list"></ul>
+  </div>
+
+  <script>
+    const VOLUNTEER_PIN = "1234"; // TODO: Replace with secure PIN or server check
+
+    function checkPin() {
+      const pin = document.getElementById('pin-input').value;
+      if (pin === VOLUNTEER_PIN) {
+        document.getElementById('pin-section').style.display = 'none';
+        document.getElementById('main-content').style.display = 'block';
+        loadKids();
+      } else {
+        document.getElementById('pin-error').classList.remove('hidden');
+      }
+    }
+
+    // Example: Load kids from localStorage (replace with API/database as needed)
+    function loadKids() {
+      const kids = JSON.parse(localStorage.getItem('checkedInKids') || '[]');
+      const list = document.getElementById('kids-list');
+      list.innerHTML = '';
+      kids.forEach(kid => {
+        const li = document.createElement('li');
+        li.textContent = kid.name;
+        list.appendChild(li);
+      });
+    }
+
+    function downloadKids() {
+      const kids = JSON.parse(localStorage.getItem('checkedInKids') || '[]');
+      const csv = "Name\n" + kids.map(k => k.name).join("\n");
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'checked_in_kids.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>
